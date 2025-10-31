@@ -1,1 +1,377 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <!-- We'll load Tailwind CSS for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- We'll use the Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Using a very dark gray instead of pure black for a slightly softer look like the image */
+            background-color: #000;
+        }
+
+        /* Custom aspect ratio for the buttons to ensure they are perfect circles */
+        .btn {
+            aspect-ratio: 1 / 1;
+        }
+        
+        /* Make the 0 button span 2 columns */
+        .col-span-2 {
+            /* FIXED: This should be span 2 to be wide */
+            grid-column: span 2;
+            /* We need to override the aspect ratio for the wide button */
+            aspect-ratio: auto;
+            /* Align text to the left for the wide button */
+            text-align: left;
+            padding-left: 1.75rem; /* Corresponds to pl-7 */
+        }
+
+        /* Add active/pressed state for buttons */
+        .btn:active {
+            filter: brightness(1.2);
+            transform: scale(0.98);
+        }
+        .btn-gray:active {
+            background-color: #e0e0e0; /* Lighter gray */
+        }
+        .btn-dark:active {
+            background-color: #444; /* Lighter dark gray */
+        }
+        .btn-orange:active {
+            background-color: #fb923c; /* Lighter orange */
+        }
+
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <!-- Main container -->
+    <div class="flex flex-col h-screen max-w-sm mx-auto p-4">
+
+        <!-- Top navigation icons (placeholder) -->
+        
+
+        <!-- Display Area -->
+        <div class="flex flex-col items-end justify-end flex-1 mb-6">
+            <!-- Secondary display (operation) -->
+            <!-- ADDED ID: small_display -->
+            <div id="small_display" class="text-3xl text-gray-400 mb-2 h-8"></div>
+            <!-- Main display (result) -->
+            <!-- Initial value set to 0 -->
+            <div id="big_display" class="text-7xl font-bold">0</div>
+        </div>
+
+        <!-- Button Grid -->
+        <!-- Using a grid with 4 columns -->
+        <div class="grid grid-cols-4 gap-3">
+            
+            <!-- Row 1 -->
+            <!-- ADDED: data-backspace -->
+            <button data-backspace class="btn btn-gray bg-gray-400 text-black text-3xl rounded-full flex justify-center items-center">
+                <!-- Backspace Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12l2.25-2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z" />
+                </svg>
+            </button>
+            <!-- ADDED: data-all-clear -->
+            <button data-all-clear class="btn btn-gray bg-gray-400 text-black text-3xl rounded-full">AC</button>
+            <!-- ADDED: data-percent -->
+            <button data-percent class="btn btn-gray bg-gray-400 text-black text-3xl rounded-full">%</button>
+            <!-- ADDED: data-operator -->
+            <button data-operator="÷" class="btn btn-orange bg-orange-500 text-white text-4xl rounded-full">÷</button>
+            
+            <!-- Row 2 -->
+            <!-- ADDED: data-number -->
+            <button data-number="7" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">7</button>
+            <button data-number="8" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">8</button>
+            <button data-number="9" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">9</button>
+            <!-- ADDED: data-operator -->
+            <button data-operator="×" class="btn btn-orange bg-orange-500 text-white text-4xl rounded-full">×</button>
+            
+            <!-- Row 3 -->
+            <button data-number="4" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">4</button>
+            <button data-number="5" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">5</button>
+            <button data-number="6" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">6</button>
+            <!-- ADDED: data-operator -->
+            <button data-operator="-" class="btn btn-orange bg-orange-500 text-white text-4xl rounded-full">-</button>
+            
+            <!-- Row 4 -->
+            <button data-number="1" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">1</button>
+            <button data-number="2" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">2</button>
+            <button data-number="3" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">3</button>
+            <!-- ADDED: data-operator -->
+            <button data-operator="+" class="btn btn-orange bg-orange-500 text-white text-4xl rounded-full">+</button>
+            
+            <!-- Row 5 -->
+            <!-- ADDED: data-toggle-sign -->
+            <button data-toggle-sign class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">+/-</button>
+            <!-- FIXED: Reverted to a standard 1-column button -->
+            <button data-number="0" class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">0</button>
+            <!-- ADDED: data-decimal -->
+            <button data-decimal class="btn btn-dark bg-gray-800 text-white text-3xl rounded-full">.</button>
+            <!-- ADDED: data-equals -->
+            <button data-equals class="btn btn-orange bg-orange-500 text-white text-4xl rounded-full">=</button>
+            
+        </div>
+        
+        <!-- Bottom home bar padding -->
+        <div class="h-8"></div>
+
+    </div>
+
+    <!-- *** REFACTORED JAVASCRIPT *** -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all the elements
+            const mainDisplay = document.getElementById('big_display');
+            const secondaryDisplay = document.getElementById('small_display');
+
+            const numberButtons = document.querySelectorAll('[data-number]');
+            const operatorButtons = document.querySelectorAll('[data-operator]');
+            const equalsButton = document.querySelector('[data-equals]');
+            const allClearButton = document.querySelector('[data-all-clear]');
+            const backspaceButton = document.querySelector('[data-backspace]');
+            const percentButton = document.querySelector('[data-percent]');
+            const decimalButton = document.querySelector('[data-decimal]');
+            const toggleSignButton = document.querySelector('[data-toggle-sign]');
+
+            // --- Calculator State ---
+            let currentOperand = '0';
+            let previousOperand = '';
+            let operation = undefined;
+            let justComputed = false; // Flag to check if we just pressed '='
+
+            // --- Core Functions ---
+
+            /**
+             * Resets the calculator to its default state.
+             */
+            function clear() {
+                currentOperand = '0';
+                previousOperand = '';
+                operation = undefined;
+                justComputed = false;
+                updateDisplay();
+            }
+
+            /**
+             * Removes the last character from the current operand.
+             */
+            function backspace() {
+                if (justComputed) {
+                    clear();
+                    return;
+                }
+                if (currentOperand.length === 1) {
+                    currentOperand = '0';
+                } else {
+                    currentOperand = currentOperand.toString().slice(0, -1);
+                }
+                updateDisplay();
+            }
+
+            /**
+             * Appends a number to the current operand.
+             * @param {string} number - The number to append (e.g., "1", "5").
+             */
+            function appendNumber(number) {
+                // If we just pressed '=', start a new number
+                if (justComputed) {
+                    currentOperand = number;
+                    justComputed = false;
+                } else if (currentOperand === '0' && number !== '.') {
+                    currentOperand = number;
+                } else {
+                    // Prevent multiple zeros at the start
+                    if (number === '0' && currentOperand === '0') return;
+                    currentOperand = currentOperand.toString() + number.toString();
+                }
+                updateDisplay();
+            }
+
+            /**
+             * Appends a decimal point if one doesn't already exist.
+             */
+            function appendDecimal() {
+                if (justComputed) {
+                    currentOperand = '0.';
+                    justComputed = false;
+                } else if (currentOperand.includes('.')) {
+                    return; // Don't add another decimal
+                } else {
+                    currentOperand = currentOperand.toString() + '.';
+                }
+                updateDisplay();
+            }
+
+            /**
+             * Sets the operation and moves operands.
+             * @param {string} op - The operation selected (e.g., "+", "÷").
+             */
+            function chooseOperation(op) {
+                if (currentOperand === '' && previousOperand === '') return;
+
+                // If we have a full expression (e.g., "5 + 5"), compute it first
+                if (previousOperand !== '' && currentOperand !== '') {
+                    compute();
+                }
+
+                operation = op;
+                // Only move to previous if it's not already set
+                if (currentOperand !== '') {
+                    previousOperand = currentOperand;
+                }
+                currentOperand = ''; // Ready for the next number
+                justComputed = false;
+                updateDisplay();
+            }
+
+            /**
+             * Performs the calculation.
+             */
+            function compute() {
+                let result;
+                const prev = parseFloat(previousOperand);
+                const current = parseFloat(currentOperand);
+
+                if (isNaN(prev) || isNaN(current) || !operation) return;
+
+                switch (operation) {
+                    case '+':
+                        result = prev + current;
+                        break;
+                    case '-':
+                        result = prev - current;
+                        break;
+                    case '×':
+                        result = prev * current;
+                        break;
+                    case '÷':
+                        if (current === 0) {
+                            result = 'Error'; // Handle divide by zero
+                        } else {
+                            result = prev / current;
+                        }
+                        break;
+                    default:
+                        return;
+                }
+
+                if (result === 'Error') {
+                    currentOperand = 'Error';
+                } else {
+                    // Format result (e.g., limit decimals)
+                    result = parseFloat(result.toFixed(10));
+                    currentOperand = result.toString();
+                }
+                
+                previousOperand = '';
+                operation = undefined;
+                justComputed = true; // Set flag
+                updateDisplay(true); // Pass true to show full expression
+            }
+
+            /**
+             * Converts the current operand to a percentage (divides by 100).
+             */
+            function handlePercent() {
+                if (currentOperand === '') return;
+                let value = parseFloat(currentOperand);
+                value = value / 100;
+                currentOperand = value.toString();
+                updateDisplay();
+            }
+
+            /**
+             * Toggles the sign of the current operand (+/-).
+             */
+            function toggleSign() {
+                if (currentOperand === '' || currentOperand === '0') return;
+                let value = parseFloat(currentOperand);
+                value = value * -1;
+                currentOperand = value.toString();
+                updateDisplay();
+            }
+
+            /**
+             * Updates the main and secondary displays.
+             * @param {boolean} showComputed - Force show the computed expression.
+             */
+            function updateDisplay(showComputed = false) {
+                // Format for readability (e.g., add commas)
+                // This is a simple formatter; a library would be better for complex cases
+                let displayValue = currentOperand;
+                if (displayValue === 'Error') {
+                    mainDisplay.textContent = 'Error';
+                } else if (displayValue !== '') {
+                    const floatVal = parseFloat(displayValue);
+                    if (displayValue.endsWith('.') || (displayValue.includes('.') && displayValue.split('.')[1] === '')) {
+                         // Don't format if user is typing a decimal, just show it
+                        mainDisplay.textContent = displayValue;
+                    } else if (floatVal > 999999999 || (floatVal < 0.0000001 && floatVal !== 0)) {
+                        // Use exponential notation for very large/small numbers
+                        mainDisplay.textContent = floatVal.toExponential(4);
+                    } else {
+                        // Basic formatting, but avoids re-formatting decimals
+                        mainDisplay.textContent = floatVal.toLocaleString('en-US', { maximumFractionDigits: 10 });
+                    }
+                } else {
+                    mainDisplay.textContent = '0'; // Default to 0 if empty
+                }
+
+                // Font scaling for large numbers
+                if (mainDisplay.textContent.length > 9) {
+                    mainDisplay.classList.remove('text-7xl');
+                    mainDisplay.classList.add('text-5xl');
+                } else {
+                    mainDisplay.classList.remove('text-5xl');
+                    mainDisplay.classList.add('text-7xl');
+                }
+
+                // Update secondary display
+                if (operation != null) {
+                    secondaryDisplay.textContent = `${previousOperand} ${operation}`;
+                } else if (showComputed) {
+                     // Keep the last operation on screen after hitting '='
+                } else {
+                    secondaryDisplay.textContent = '';
+                }
+            }
+
+            // --- Event Listeners ---
+
+            allClearButton.addEventListener('click', clear);
+            backspaceButton.addEventListener('click', backspace);
+            equalsButton.addEventListener('click', compute);
+            decimalButton.addEventListener('click', appendDecimal);
+            percentButton.addEventListener('click', handlePercent);
+            toggleSignButton.addEventListener('click', toggleSign);
+
+            numberButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    appendNumber(button.dataset.number);
+                });
+            });
+
+            operatorButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    chooseOperation(button.dataset.operator);
+                });
+            });
+            
+            // Initial setup
+            clear();
+        });
+    </script>
+</body>
+</html>
+
