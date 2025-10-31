@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Image Gallery</title>
+
+    <!-- 1. LOAD TAILWIND FIRST -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. CONFIGURE TAILWIND -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    
+    <!-- 3. SET INITIAL THEME (to prevent FOUC) -->
+    <script>
+        // On page load or when changing themes, best to add inline in 'head' to avoid FOUC
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- (Removed the old script tags from here) -->
+    
+    <!-- Load Inter font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        html, body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        /* Style for file input button (for browsers that might still show it) */
+        input[type="file"]::file-selector-button {
+            @apply bg-white border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600;
+        }
+        input[type="file"]::file-selector-button:hover {
+            @apply border-gray-400 dark:border-gray-500;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300 transition-colors duration-200">
+
+    <div class="container mx-auto max-w-7xl px-4 py-8">
+        
+        <!-- Theme Toggle Button -->
+        <div class="flex justify-end mb-4">
+            <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-150" aria-label="Toggle dark mode">
+                <!-- Moon Icon -->
+                <svg id="themeIconMoon" class="w-6 h-6 text-gray-800 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+                <!-- Sun Icon -->
+                <svg id="themeIconSun" class="w-6 h-6 text-yellow-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white" style="text-align: center;">Image Gallery</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-2" style="text-align: center;">A simple platform to showcase your pictures.</p>
+        </header>
+
+        <!-- Add Image Section -->
+        <section class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+            <h2 class="text-2xl font-semibold mb-4 dark:text-white">Add a New Image</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Add from URL -->
+                <div>
+                    <label for="imageUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Add from URL</label>
+                    <div class="flex space-x-2">
+                        <input type="url" id="imageUrl" placeholder="https://example.com/image.png" class="flex-grow w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                        <button id="addUrlButton" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-150 whitespace-nowrap">Add URL</button>
+                    </div>
+                </div>
+
+                <!-- Upload from Computer -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload from Computer</label>
+                    <label for="fileInput" id="fileDropzone" class="flex justify-center w-full h-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200">
+                        <div class="space-y-1 text-center pointer-events-none"> <!-- Added pointer-events-none here -->
+                            <svg class="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                                <p class="pl-1">Click to upload or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, GIF, WebP</p>
+                        </div>
+                        <input id="fileInput" name="fileInput" type="file" class="sr-only" accept="image/*">
+                    </label>
+                </div>
+            </div>
+            <!-- Feedback Message Area -->
+            <div id="feedbackMessage" class="text-red-600 text-sm mt-2 h-4"></div>
+        </section>
+
+        <!-- Gallery Display -->
+        <section>
+            <h2 class="text-2xl font-semibold mb-4 dark:text-white">Gallery</h2>
+            <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Images will be dynamically inserted here -->
+            </div>
+            <p id="emptyMessage" class="text-gray-500 dark:text-gray-400 hidden">Your gallery is empty. Add some images to get started!</p>
+        </section>
+
+    </div>
+
+    <!-- Image Modal (Lightbox) -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 hidden transition-opacity duration-300">
+        <div class="relative max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-2">
+            <img id="modalImage" src="" alt="Full size view" class="max-w-full max-h-[85vh] object-contain rounded-md">
+            <button id="closeModalButton" class="absolute -top-4 -right-4 bg-white text-gray-800 rounded-full h-10 w-10 flex items-center justify-center text-2xl font-bold shadow-lg hover:bg-gray-200 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-gray-300 transition-colors">&times;</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageUrlInput = document.getElementById('imageUrl');
+            const addUrlButton = document.getElementById('addUrlButton');
+            const fileInput = document.getElementById('fileInput');
+            const fileDropzone = document.getElementById('fileDropzone'); // Get the dropzone label
+            const galleryGrid = document.getElementById('galleryGrid');
+            const emptyMessage = document.getElementById('emptyMessage');
+            const feedbackMessage = document.getElementById('feedbackMessage'); // Get feedback element
+            
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const closeModalButton = document.getElementById('closeModalButton');
+
+            // NEW: Theme toggle elements
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIconMoon = document.getElementById('themeIconMoon');
+            const themeIconSun = document.getElementById('themeIconSun');
+
+            // Store images in an array
+            let galleryImages = [
+                {
+                    src: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
+                    name: 'Misty Forest.jpg',
+                    type: 'url'
+                },
+                {
+                    src: 'https://koenigsegg-cdn-g7eehhd6f0ewcaff.z02.azurefd.net/drupal/styles/1920x1400/azure/2022-03/sanownik_com_koenigsegg_30848.jpeg?h=4521fff0&itok=GTUkrv5R',
+                    name: 'Koenigsegg.jpg',
+                    type: 'url'
+                },
+                {
+                    src: 'https://co-media.hptiendaenlinea.com/magefan_blog/2CODMW2.jpg',
+                    name: 'Call of Duty.jpg',
+                    type: 'url'
+                },
+                {
+                    src: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
+                    name: 'Night Cityscape.jpg',
+                    type: 'url'
+                }
+            ];
+
+            // --- Modal Functions ---
+            const openModal = (src) => {
+                modalImage.src = src;
+                imageModal.classList.remove('hidden');
+                imageModal.classList.add('flex');
+            };
+
+            const closeModal = () => {
+                imageModal.classList.add('hidden');
+                imageModal.classList.remove('flex');
+                modalImage.src = ''; // Clear src
+            };
+
+            closeModalButton.addEventListener('click', closeModal);
+            // Close modal by clicking on the background overlay
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    closeModal();
+                }
+            });
+
+            // --- Gallery Functions ---
+
+            /**
+             * Renders a single image card into the gallery grid.
+             * @param {object} image - The image object {src, name, type}
+             */
+            const createImageCard = (image) => {
+                const card = document.createElement('div');
+                // UPDATED: Added dark mode classes
+                card.className = 'bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-105';
+                
+                // Truncate long file names
+                const displayName = image.name.length > 25 ? image.name.substring(0, 22) + '...' : image.name;
+
+                // UPDATED: Added dark mode text classes
+                card.innerHTML = `
+                    <img src="${image.src}" alt="${image.name}" class="w-full h-48 object-cover">
+                    <div class="p-3">
+                        <p class="text-sm font-medium text-gray-800 dark:text-white truncate" title="${image.name}">${displayName}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${image.type === 'url' ? 'From Web' : 'Uploaded'}</p>
+                    </div>
+                `;
+
+                // Add click listener to open modal
+                card.addEventListener('click', () => openModal(image.src));
+                
+                galleryGrid.appendChild(card);
+            };
+
+            /**
+             * Renders all images from the galleryImages array.
+             */
+            const renderGallery = () => {
+                galleryGrid.innerHTML = ''; // Clear existing grid
+                if (galleryImages.length === 0) {
+                    emptyMessage.classList.remove('hidden');
+                } else {
+                    emptyMessage.classList.add('hidden');
+                    galleryImages.forEach(createImageCard);
+                }
+            };
+
+            // --- Helper function to show feedback ---
+            // UPDATED: To support dark mode colors
+            const showFeedback = (message, isError = true) => {
+                feedbackMessage.textContent = message;
+                if (isError) {
+                    feedbackMessage.className = 'text-red-600 dark:text-red-500 text-sm mt-2 h-4';
+                } else {
+                    feedbackMessage.className = 'text-green-600 dark:text-green-500 text-sm mt-2 h-4';
+                }
+                
+                // Clear message after 3 seconds
+                setTimeout(() => {
+                    feedbackMessage.textContent = '';
+                }, 3000);
+            };
+
+            // --- Helper function to process an uploaded file ---
+            const processFile = (file) => {
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (event) => {
+                        galleryImages.unshift({
+                            src: event.target.result,
+                            name: file.name,
+                            type: 'file'
+                        });
+                        renderGallery();
+                        showFeedback(`Uploaded "${file.name}"`, false); // Success feedback
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    console.warn('Please upload a valid image file.');
+                    showFeedback('Please upload a valid image file (PNG, JPG, etc.).');
+                }
+            };
+
+            // --- Event Handlers ---
+
+            // Add image from URL
+            addUrlButton.addEventListener('click', () => {
+                const url = imageUrlInput.value.trim();
+                if (url) {
+                    // Get the part of the URL before any query parameters
+                    const baseUrl = url.split('?')[0];
+
+                    // Basic check for image extension on the baseUrl
+                    if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(baseUrl)) {
+                        const imageName = baseUrl.substring(baseUrl.lastIndexOf('/') + 1) || 'Image from Web';
+                        galleryImages.unshift({
+                            src: url,
+                            name: imageName,
+                            type: 'url'
+                        });
+                        renderGallery();
+                        imageUrlInput.value = '';
+                        showFeedback(`Added "${imageName}" from web`, false); // Success feedback
+                    } else {
+                        // Simple validation feedback
+                        console.warn('Please enter a valid image URL (ending in .jpg, .png, .gif, etc.).');
+                        showFeedback('Please enter a valid image URL (e.g., ending in .jpg, .png).');
+                        imageUrlInput.focus();
+                    }
+                }
+            });
+            
+            // Add image from File Upload (Click)
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                processFile(file);
+                // Reset file input to allow uploading the same file again
+                fileInput.value = ''; 
+            });
+
+            // --- Drag and Drop Handlers ---
+            
+            // 1. Prevent default behavior for the entire window
+            // This stops the browser from opening the file if you drop it anywhere
+            ['dragover', 'drop'].forEach(eventName => {
+                window.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                }, false);
+            });
+
+            const dropzone = fileDropzone;
+
+            // 2. Add listeners to the dropzone itself
+            dropzone.addEventListener('dragenter', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                // UPDATED: Added dark mode highlight classes
+                dropzone.classList.add('bg-gray-200', 'border-blue-500', 'dark:bg-gray-600');
+            }, false);
+
+            dropzone.addEventListener('dragover', (e) => {
+                e.stopPropagation();
+                e.preventDefault(); // This is crucial to allow a drop
+                // UPDATED: Added dark mode highlight classes
+                dropzone.classList.add('bg-gray-200', 'border-blue-500', 'dark:bg-gray-600');
+            }, false);
+
+            dropzone.addEventListener('dragleave', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                // Only remove highlight if not dragging over a child element
+                if (e.target === dropzone) {
+                   // UPDATED: Remove dark mode highlight classes
+                   dropzone.classList.remove('bg-gray-200', 'border-blue-500', 'dark:bg-gray-600');
+                }
+            }, false);
+
+        
+            dropzone.addEventListener('drop', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                // UPDATED: Remove dark mode highlight classes
+                dropzone.classList.remove('bg-gray-200', 'border-blue-500', 'dark:bg-gray-600');
+                
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                processFile(file);
+            }, false);
+
+            // --- NEW: Theme Toggle Logic ---
+            // const userTheme = localStorage.getItem('theme'); // No longer needed here
+            // const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches; // No longer needed here
+
+            /**
+             * Updates the theme based on the isDark boolean
+             * @param {boolean} isDark - Whether to apply dark mode or not
+             */
+            const updateTheme = (isDark) => {
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    themeIconMoon.classList.add('hidden');
+                    themeIconSun.classList.remove('hidden');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeIconMoon.classList.remove('hidden');
+                    themeIconSun.classList.add('hidden');
+                    localStorage.setItem('theme', 'light');
+                }
+            };
+
+            // Set initial theme on page load - This logic was moved to the <head> to prevent FOUC
+            // if (userTheme === 'dark' || (!userTheme && systemTheme)) {
+            //     updateTheme(true);
+            // } else {
+            //     updateTheme(false);
+            // }
+
+            // NEW: Set initial ICON state based on class set in <head>
+            if (document.documentElement.classList.contains('dark')) {
+                themeIconMoon.classList.add('hidden');
+                themeIconSun.classList.remove('hidden');
+            } else {
+                themeIconMoon.classList.remove('hidden');
+                themeIconSun.classList.add('hidden');
+            }
+
+            // Add toggle button listener
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.contains('dark');
+                updateTheme(!isDark);
+            });
+
+
+            // Initial render
+            renderGallery();
+        });
+    </script>
+</body>
+</html>
+
+
+  
