@@ -1,2 +1,2 @@
 # Simple Base Projects
-Project Tasks of CodeAlpha Internship.
+Simple Clickbait, Below Basic, Web Apps~
